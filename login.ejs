@@ -1,0 +1,17 @@
+<%- include('partials/header', { pageTitle: 'Entrar' }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="form-card">
+  <h1>Entrar</h1>
+  <form method="post" action="/login">
+    <input type="hidden" name="next" value="<%= next %>">
+    <label>Usuário ou e-mail</label>
+    <input type="text" name="identifier" required autocomplete="username">
+    <label>Senha</label>
+    <input type="password" name="password" required autocomplete="current-password">
+    <button type="submit" class="btn-primary">Entrar</button>
+  </form>
+  <p class="form-footer">Não tem conta? <a href="/register">Cadastre-se</a></p>
+</div>
+
+<%- include('partials/footer') %>

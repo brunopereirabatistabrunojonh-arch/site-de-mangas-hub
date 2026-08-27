@@ -1,0 +1,147 @@
+<%- include('partials/header', { pageTitle: manga.title + ' - Cap. ' + chapter.number, bodyClass: 'reader-mode' }) %>
+
+<div class="reader-topbar">
+  <a href="/manga/<%= manga.slug %>" class="reader-back">← <%= manga.title %></a>
+  <span class="reader-chapter-label">Capítulo <%= chapter.number %><% if (chapter.title) { %> — <%= chapter.title %><% } %></span>
+  <div class="reader-toolbar">
+    <button id="modeToggleBtn" class="reader-tool-btn" title="Alternar modo de leitura (V)">📖 Página</button>
+    <button id="zoomOutBtn" class="reader-tool-btn" title="Diminuir zoom (-)">−</button>
+    <span id="zoomLabel" class="reader-zoom-label">100%</span>
+    <button id="zoomInBtn" class="reader-tool-btn" title="Aumentar zoom (+)">+</button>
+  </div>
+</div>
+
+<!-- MODO ROLAGEM: todas as páginas empilhadas -->
+<div id="scrollView" class="reader-pages">
+  <% pages.forEach(p => { %>
+    <img src="<%= p.image_path %>" alt="página <%= p.page_order %>" loading="lazy">
+  <% }) %>
+</div>
+
+<!-- MODO PÁGINA A PÁGINA: uma imagem por vez, com zoom/pan -->
+<div id="pageView" class="reader-page-view hidden">
+  <div class="page-tap-zone left" id="tapPrev" aria-label="Página anterior"></div>
+  <div class="page-tap-zone right" id="tapNext" aria-label="Próxima página"></div>
+  <div class="page-frame" id="pageFrame">
+    <img id="pageImg" src="" alt="página atual">
+  </div>
+  <div class="page-counter" id="pageCounter">1 / 1</div>
+</div>
+
+<div class="reader-nav">
+  <% if (prevChapter !== null) { %>
+    <a class="btn-outline" href="/manga/<%= manga.slug %>/chapter/<%= prevChapter %>" title="Atalho: P">← Cap. anterior</a>
+  <% } else { %><span></span><% } %>
+  <a class="btn-outline" href="/manga/<%= manga.slug %>">Índice</a>
+  <% if (nextChapter !== null) { %>
+    <a class="btn-primary" href="/manga/<%= manga.slug %>/chapter/<%= nextChapter %>" title="Atalho: N">Próximo cap. →</a>
+  <% } else { %><span></span><% } %>
+</div>
+
+<p class="reader-shortcuts-hint muted small">
+  Atalhos: <kbd>←</kbd>/<kbd>→</kbd> página · <kbd>V</kbd> alternar modo · <kbd>+</kbd>/<kbd>−</kbd> zoom ·
+  <kbd>N</kbd> próx. capítulo · <kbd>P</kbd> cap. anterior
+</p>
+
+<%- include('partials/footer') %>
+
+<script>
+(function () {
+  const PAGES = <%- JSON.stringify(pages.map(p => p.image_path)) %>;
+  const PREV_CHAPTER = <%- prevChapter === null ? 'null' : prevChapter %>;
+  const NEXT_CHAPTER = <%- nextChapter === null ? 'null' : nextChapter %>;
+  const MANGA_SLUG = <%- JSON.stringify(manga.slug) %>;
+
+  const scrollView = document.getElementById('scrollView');
+  const pageView = document.getElementById('pageView');
+  const pageImg = document.getElementById('pageImg');
+  const pageFrame = document.getElementById('pageFrame');
+  const pageCounter = document.getElementById('pageCounter');
+  const modeBtn = document.getElementById('modeToggleBtn');
+  const zoomLabel = document.getElementById('zoomLabel');
+
+  let mode = localStorage.getItem('mangahub:readerMode') || 'scroll'; // 'scroll' | 'page'
+  let currentPage = 0;
+  let zoom = 1;
+  const ZOOM_STEPS = [1, 1.25, 1.5, 2, 2.5];
+  let zoomIdx = 0;
+
+  function applyZoom() {
+    zoom = ZOOM_STEPS[zoomIdx];
+    pageImg.style.transform = 'scale(' + zoom + ')';
+    zoomLabel.textContent = Math.round(zoom * 100) + '%';
+    pageFrame.classList.toggle('zoomed', zoom > 1);
+  }
+  function zoomIn() { zoomIdx = Math.min(ZOOM_STEPS.length - 1, zoomIdx + 1); applyZoom(); }
+  function zoomOut() { zoomIdx = Math.max(0, zoomIdx - 1); applyZoom(); }
+  function resetZoom() { zoomIdx = 0; applyZoom(); pageFrame.scrollTo(0, 0); }
+
+  function renderPage() {
+    if (currentPage < 0) currentPage = 0;
+    if (currentPage > PAGES.length - 1) currentPage = PAGES.length - 1;
+    pageImg.src = PAGES[currentPage];
+    pageCounter.textContent = (currentPage + 1) + ' / ' + PAGES.length;
+    resetZoom();
+  }
+
+  function goNextPage() {
+    if (currentPage < PAGES.length - 1) { currentPage++; renderPage(); }
+    else if (NEXT_CHAPTER !== null) { window.location.href = '/manga/' + MANGA_SLUG + '/chapter/' + NEXT_CHAPTER; }
+  }
+  function goPrevPage() {
+    if (currentPage > 0) { currentPage--; renderPage(); }
+    else if (PREV_CHAPTER !== null) { window.location.href = '/manga/' + MANGA_SLUG + '/chapter/' + PREV_CHAPTER; }
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    localStorage.setItem('mangahub:readerMode', mode);
+    if (mode === 'page') {
+      scrollView.classList.add('hidden');
+      pageView.classList.remove('hidden');
+      modeBtn.textContent = '📜 Rolagem';
+      renderPage();
+    } else {
+      pageView.classList.add('hidden');
+      scrollView.classList.remove('hidden');
+      modeBtn.textContent = '📖 Página';
+    }
+  }
+
+  modeBtn.addEventListener('click', () => setMode(mode === 'scroll' ? 'page' : 'scroll'));
+  document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
+  document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
+  document.getElementById('tapNext').addEventListener('click', goNextPage);
+  document.getElementById('tapPrev').addEventListener('click', goPrevPage);
+  pageImg.addEventListener('dblclick', () => { zoomIdx = zoomIdx === 0 ? 2 : 0; applyZoom(); });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    switch (e.key) {
+      case 'ArrowRight': case 'd': case 'D':
+        if (mode === 'page') goNextPage(); else window.scrollBy(0, window.innerHeight * 0.85);
+        break;
+      case 'ArrowLeft': case 'a': case 'A':
+        if (mode === 'page') goPrevPage(); else window.scrollBy(0, -window.innerHeight * 0.85);
+        break;
+      case 'v': case 'V':
+        setMode(mode === 'scroll' ? 'page' : 'scroll');
+        break;
+      case '+': case '=':
+        if (mode === 'page') zoomIn();
+        break;
+      case '-': case '_':
+        if (mode === 'page') zoomOut();
+        break;
+      case 'n': case 'N':
+        if (NEXT_CHAPTER !== null) window.location.href = '/manga/' + MANGA_SLUG + '/chapter/' + NEXT_CHAPTER;
+        break;
+      case 'p': case 'P':
+        if (PREV_CHAPTER !== null) window.location.href = '/manga/' + MANGA_SLUG + '/chapter/' + PREV_CHAPTER;
+        break;
+    }
+  });
+
+  setMode(mode);
+})();
+</script>

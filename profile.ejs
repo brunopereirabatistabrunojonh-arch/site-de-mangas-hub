@@ -1,0 +1,28 @@
+<%- include('partials/header', { pageTitle: profileUser.username }) %>
+
+<div class="profile-header">
+  <div class="avatar-big" style="background:<%= profileUser.avatar_color %>"><%= profileUser.username[0].toUpperCase() %></div>
+  <div>
+    <h1><%= profileUser.username %></h1>
+    <% if (profileUser.bio) { %><p class="muted"><%= profileUser.bio %></p><% } %>
+    <p class="muted small">Membro desde <%= new Date(profileUser.created_at).toLocaleDateString('pt-BR') %></p>
+  </div>
+</div>
+
+<h2 class="section-title">Mangás publicados</h2>
+<div class="manga-grid">
+  <% mangaList.forEach(m => { %>
+    <a class="manga-card" href="/manga/<%= m.slug %>">
+      <span class="badge-status"><%= m.status %></span>
+      <div class="cover-wrap">
+        <% if (m.cover_path) { %><img src="<%= m.cover_path %>" alt="<%= m.title %>"><% } else { %><div class="cover-placeholder"><%= m.title[0] %></div><% } %>
+      </div>
+      <div class="manga-card-info">
+        <h3><%= m.title %></h3>
+        <p class="muted small"><%= m.chapter_count %> capítulo<%= m.chapter_count === 1 ? '' : 's' %></p>
+      </div>
+    </a>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

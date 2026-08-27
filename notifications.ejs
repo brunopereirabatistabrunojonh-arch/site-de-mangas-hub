@@ -1,0 +1,23 @@
+<%- include('partials/header', { pageTitle: 'Notificações' }) %>
+
+<h1 class="page-title">Notificações</h1>
+
+<% if (notifications.length === 0) { %>
+  <p class="empty-msg">Nenhuma notificação por enquanto. Favorite mangás para ser avisado quando sair capítulo novo.</p>
+<% } %>
+
+<div class="notif-list">
+  <% notifications.forEach(n => { %>
+    <a class="notif-row <%= n.is_read ? '' : 'unread' %>" href="/manga/<%= n.manga_slug %>/chapter/<%= n.chapter_number %>">
+      <div class="cover-thumb">
+        <% if (n.cover_path) { %><img src="<%= n.cover_path %>" alt=""><% } else { %><div class="cover-placeholder small"><%= n.manga_title[0] %></div><% } %>
+      </div>
+      <div class="notif-body">
+        <p><strong><%= n.manga_title %></strong> tem capítulo novo: <%= n.chapter_number %><% if (n.chapter_title) { %> — <%= n.chapter_title %><% } %></p>
+        <p class="muted small"><%= new Date(n.created_at).toLocaleString('pt-BR') %></p>
+      </div>
+    </a>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

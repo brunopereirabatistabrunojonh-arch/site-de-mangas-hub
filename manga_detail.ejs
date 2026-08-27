@@ -1,0 +1,79 @@
+<%- include('partials/header', { pageTitle: manga.title }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="manga-detail-header">
+  <div class="cover-wrap large">
+    <% if (manga.cover_path) { %><img src="<%= manga.cover_path %>" alt="<%= manga.title %>"><% } else { %><div class="cover-placeholder"><%= manga.title[0] %></div><% } %>
+  </div>
+  <div class="manga-detail-info">
+    <h1><%= manga.title %></h1>
+    <p class="muted">por <a href="/profile/<%= manga.author_username %>"><%= manga.author_username %></a></p>
+    <p class="tags">
+      <% if (manga.genre) { %><span class="tag"><%= manga.genre %></span><% } %>
+      <span class="tag status"><%= manga.status %></span>
+    </p>
+    <p class="description"><%= manga.description || 'Sem descrição.' %></p>
+
+    <div class="action-row">
+      <% if (chapters.length > 0) { %>
+        <a class="btn-primary" href="/manga/<%= manga.slug %>/chapter/<%= chapters[0].number %>">▶ Ler primeiro capítulo</a>
+      <% } %>
+      <% if (currentUser && !isOwner) { %>
+        <form method="post" action="/manga/<%= manga.slug %>/bookmark">
+          <button type="submit" class="btn-outline <%= bookmarked ? 'active' : '' %>">
+            <%= bookmarked ? '★ Favoritado' : '☆ Favoritar' %>
+          </button>
+        </form>
+      <% } %>
+      <% if (isOwner) { %>
+        <a class="btn-outline" href="/manga/<%= manga.slug %>/chapter/new">+ Novo capítulo</a>
+        <a class="btn-outline" href="/manga/<%= manga.slug %>/edit">Editar</a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<h2 class="section-title">Capítulos</h2>
+<% if (chapters.length === 0) { %>
+  <p class="empty-msg">Nenhum capítulo publicado ainda.</p>
+<% } %>
+<div class="chapter-list">
+  <% chapters.slice().reverse().forEach(c => { %>
+    <div class="chapter-row">
+      <a href="/manga/<%= manga.slug %>/chapter/<%= c.number %>">
+        Capítulo <%= c.number %><% if (c.title) { %> — <%= c.title %><% } %>
+      </a>
+      <span class="muted small"><%= c.page_count %> pág. · <%= new Date(c.created_at).toLocaleDateString('pt-BR') %></span>
+      <% if (isOwner) { %>
+        <form method="post" action="/manga/<%= manga.slug %>/chapter/<%= c.number %>/delete" onsubmit="return confirm('Excluir este capítulo?');">
+          <button type="submit" class="link-btn danger">excluir</button>
+        </form>
+      <% } %>
+    </div>
+  <% }) %>
+</div>
+
+<h2 class="section-title" id="comentarios">Comentários</h2>
+<% if (currentUser) { %>
+  <form method="post" action="/manga/<%= manga.slug %>/comment" class="comment-form">
+    <textarea name="body" rows="3" placeholder="Escreva um comentário..." required></textarea>
+    <button type="submit" class="btn-primary small">Comentar</button>
+  </form>
+<% } else { %>
+  <p class="muted"><a href="/login">Entre</a> para comentar.</p>
+<% } %>
+
+<div class="comment-list">
+  <% comments.forEach(c => { %>
+    <div class="comment">
+      <div class="avatar-chip small" style="background:<%= c.avatar_color %>"><%= c.username[0].toUpperCase() %></div>
+      <div>
+        <p class="comment-author"><%= c.username %> <span class="muted small"><%= new Date(c.created_at).toLocaleDateString('pt-BR') %></span></p>
+        <p class="comment-body"><%= c.body %></p>
+      </div>
+    </div>
+  <% }) %>
+  <% if (comments.length === 0) { %><p class="muted">Nenhum comentário ainda.</p><% } %>
+</div>
+
+<%- include('partials/footer') %>

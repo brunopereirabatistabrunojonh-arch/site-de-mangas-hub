@@ -1,0 +1,23 @@
+<%- include('partials/header', { pageTitle: 'Novo capítulo — ' + manga.title }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="form-card">
+  <h1>Novo capítulo</h1>
+  <p class="muted">Mangá: <strong><%= manga.title %></strong></p>
+
+  <form method="post" action="/manga/<%= manga.slug %>/chapter/new" enctype="multipart/form-data">
+    <label>Número do capítulo</label>
+    <input type="number" step="0.1" name="number" required placeholder="Ex: 1, 2, 2.5...">
+
+    <label>Título do capítulo (opcional)</label>
+    <input type="text" name="title" placeholder="Ex: O começo">
+
+    <label>Páginas (selecione todas as imagens, na ordem de leitura)</label>
+    <input type="file" name="pages" accept="image/*" multiple required>
+    <p class="muted small">Dica: nomeie seus arquivos como 01.jpg, 02.jpg... antes de selecionar, pra manter a ordem certa.</p>
+
+    <button type="submit" class="btn-primary">Publicar capítulo</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

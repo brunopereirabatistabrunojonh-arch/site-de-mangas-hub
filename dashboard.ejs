@@ -1,0 +1,31 @@
+<%- include('partials/header', { pageTitle: 'Meu Painel' }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="page-header-row">
+  <h1 class="page-title">Meu Painel</h1>
+  <a href="/manga/new" class="btn-primary small">+ Novo mangá</a>
+</div>
+
+<% if (myManga.length === 0) { %>
+  <p class="empty-msg">Você ainda não publicou nenhum mangá. <a href="/manga/new">Comece agora!</a></p>
+<% } %>
+
+<div class="manga-list">
+  <% myManga.forEach(m => { %>
+    <div class="manga-row">
+      <a href="/manga/<%= m.slug %>" class="cover-thumb">
+        <% if (m.cover_path) { %><img src="<%= m.cover_path %>" alt=""><% } else { %><div class="cover-placeholder small"><%= m.title[0] %></div><% } %>
+      </a>
+      <div class="manga-row-info">
+        <a href="/manga/<%= m.slug %>"><h3><%= m.title %></h3></a>
+        <p class="muted small"><%= m.chapter_count %> capítulo<%= m.chapter_count === 1 ? '' : 's' %> · <%= m.status %></p>
+      </div>
+      <div class="manga-row-actions">
+        <a class="btn-outline small" href="/manga/<%= m.slug %>/chapter/new">+ Capítulo</a>
+        <a class="btn-outline small" href="/manga/<%= m.slug %>/edit">Editar</a>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

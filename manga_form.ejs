@@ -1,0 +1,39 @@
+<%- include('partials/header', { pageTitle: manga ? 'Editar mangá' : 'Novo mangá' }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="form-card">
+  <h1><%= manga ? 'Editar mangá' : 'Publicar novo mangá' %></h1>
+  <form method="post" action="<%= manga ? '/manga/' + manga.slug + '/edit' : '/manga/new' %>" enctype="multipart/form-data">
+    <label>Título</label>
+    <input type="text" name="title" required value="<%= manga ? manga.title : '' %>">
+
+    <label>Descrição / sinopse</label>
+    <textarea name="description" rows="4"><%= manga ? manga.description : '' %></textarea>
+
+    <label>Gênero (ex: ação, romance, fantasia)</label>
+    <input type="text" name="genre" value="<%= manga ? manga.genre : '' %>">
+
+    <label>Status</label>
+    <select name="status">
+      <option value="em andamento" <%= manga && manga.status === 'em andamento' ? 'selected' : '' %>>Em andamento</option>
+      <option value="completo" <%= manga && manga.status === 'completo' ? 'selected' : '' %>>Completo</option>
+      <option value="hiato" <%= manga && manga.status === 'hiato' ? 'selected' : '' %>>Em hiato</option>
+    </select>
+
+    <label>Capa <% if (manga) { %>(deixe em branco pra manter a atual)<% } %></label>
+    <input type="file" name="cover" accept="image/*">
+    <% if (manga && manga.cover_path) { %>
+      <img src="<%= manga.cover_path %>" alt="capa atual" style="max-width:120px;border-radius:8px;margin-top:8px;">
+    <% } %>
+
+    <button type="submit" class="btn-primary"><%= manga ? 'Salvar alterações' : 'Publicar' %></button>
+  </form>
+
+  <% if (manga) { %>
+    <form method="post" action="/manga/<%= manga.slug %>/delete" onsubmit="return confirm('Tem certeza? Isso vai apagar o mangá e TODOS os capítulos permanentemente.');" style="margin-top:20px;">
+      <button type="submit" class="btn-danger">Excluir mangá permanentemente</button>
+    </form>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

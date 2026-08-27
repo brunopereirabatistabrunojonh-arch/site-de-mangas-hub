@@ -1,0 +1,24 @@
+<%- include('partials/header', { pageTitle: 'Minha Biblioteca' }) %>
+
+<h1 class="page-title">Minha Biblioteca</h1>
+
+<% if (saved.length === 0) { %>
+  <p class="empty-msg">Você ainda não favoritou nenhum mangá. <a href="/">Explore os mangás disponíveis</a>.</p>
+<% } %>
+
+<div class="manga-grid">
+  <% saved.forEach(m => { %>
+    <a class="manga-card" href="/manga/<%= m.slug %>">
+      <span class="badge-status"><%= m.status %></span>
+      <div class="cover-wrap">
+        <% if (m.cover_path) { %><img src="<%= m.cover_path %>" alt="<%= m.title %>"><% } else { %><div class="cover-placeholder"><%= m.title[0] %></div><% } %>
+      </div>
+      <div class="manga-card-info">
+        <h3><%= m.title %></h3>
+        <p class="muted">por <%= m.author_username %></p>
+      </div>
+    </a>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

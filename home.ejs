@@ -1,0 +1,50 @@
+<%- include('partials/header', { pageTitle: 'Início', q }) %>
+<%- include('partials/flash', { flash }) %>
+
+<% if (!q) { %>
+<section class="hero">
+  <div class="hero-inner">
+    <h1>LEIA E PUBLIQUE<br>SEU <span class="accent">MANGÁ</span>.</h1>
+    <p>Uma vitrine pra histórias em quadrinhos originais. Publique seus capítulos, junte leitores e acompanhe o que a comunidade está criando.</p>
+    <% if (currentUser) { %>
+      <a href="/manga/new" class="btn-primary">+ Publicar meu mangá</a>
+    <% } else { %>
+      <a href="/register" class="btn-primary">Criar conta grátis</a>
+    <% } %>
+  </div>
+</section>
+<% } %>
+
+<h2 class="section-title"><span><%= q ? `Resultados para "${q}"` : 'Lançamentos recentes' %></span></h2>
+
+<% if (mangaList.length === 0) { %>
+  <p class="empty-msg">
+    <% if (q) { %>
+      Nenhum mangá encontrado para "<%= q %>". Tente outro termo de busca.
+    <% } else { %>
+      Ainda não há mangás publicados. <% if (currentUser) { %><a href="/manga/new">Publique o primeiro!</a><% } else { %><a href="/register">Crie uma conta</a> e publique o primeiro.<% } %>
+    <% } %>
+  </p>
+<% } %>
+
+<div class="manga-grid">
+  <% mangaList.forEach(m => { %>
+    <a class="manga-card" href="/manga/<%= m.slug %>">
+      <span class="badge-status"><%= m.status %></span>
+      <div class="cover-wrap">
+        <% if (m.cover_path) { %>
+          <img src="<%= m.cover_path %>" alt="<%= m.title %>">
+        <% } else { %>
+          <div class="cover-placeholder"><%= m.title[0] %></div>
+        <% } %>
+      </div>
+      <div class="manga-card-info">
+        <h3><%= m.title %></h3>
+        <p class="muted small">por <%= m.author_username %></p>
+        <p class="muted small"><%= m.chapter_count %> capítulo<%= m.chapter_count === 1 ? '' : 's' %></p>
+      </div>
+    </a>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>

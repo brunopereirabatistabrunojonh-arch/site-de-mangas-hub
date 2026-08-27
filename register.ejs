@@ -1,0 +1,20 @@
+<%- include('partials/header', { pageTitle: 'Criar conta' }) %>
+<%- include('partials/flash', { flash }) %>
+
+<div class="form-card">
+  <h1>Criar conta</h1>
+  <form method="post" action="/register">
+    <label>Nome de usuário</label>
+    <input type="text" name="username" required pattern="[a-zA-Z0-9_]{3,20}" title="3-20 caracteres: letras, números e _" autocomplete="username">
+    <label>E-mail</label>
+    <input type="email" name="email" required autocomplete="email">
+    <label>Senha</label>
+    <input type="password" name="password" required minlength="6" autocomplete="new-password">
+    <label>Confirmar senha</label>
+    <input type="password" name="password2" required minlength="6" autocomplete="new-password">
+    <button type="submit" class="btn-primary">Criar conta</button>
+  </form>
+  <p class="form-footer">Já tem conta? <a href="/login">Entrar</a></p>
+</div>
+
+<%- include('partials/footer') %>
